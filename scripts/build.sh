@@ -1,5 +1,20 @@
 #!/bin/bash
 
+function error_and_exit {
+  echo "erro: $1" >&2
+  exit 1
+}
+
+function purge_repo() {
+  REPO="$1"
+  [ "$REPO" = "" ] && error_and_exit "purge_repo() needs one argument (zero provided)"
+  docker image ls --format json |
+    jq -r '. | select(.Repository == "'"${REPO}"'" and .Tag != "latest") | .Tag' |
+    sort -r |
+    awk -v REPO="$REPO" '{ if (NR>1) printf("docker rmi %s:%s\n",REPO,$0) }' |
+    bash -x
+}
+
 REPO="ghcr.io/sfmunoz/jails-base"
 TS="$(date +%Y%m%d_%H%M%S)"
 
@@ -15,8 +30,4 @@ docker tag ${REPO}:${TS} ${REPO}:latest
 
 { set +x; } 2>/dev/null
 
-docker image ls --format json |
-  jq -r '. | select(.Repository == "'"${REPO}"'" and .Tag != "latest") | .Tag' |
-  sort -r |
-  awk -v REPO="$REPO" '{ if (NR>1) printf("docker rmi %s:%s\n",REPO,$0) }' |
-  bash -x
+purge_repo "$REPO"
