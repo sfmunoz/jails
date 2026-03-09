@@ -1,0 +1,5 @@
+FROM debian:trixie-20260223-slim
+
+LABEL maintainer="46285520+sfmunoz@users.noreply.github.com"
+
+WORKDIR /workspace
