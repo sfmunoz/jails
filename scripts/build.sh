@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function error_and_exit {
-  echo "erro: $1" >&2
+  echo "error: $1" >&2
   exit 1
 }
 
