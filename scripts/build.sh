@@ -15,19 +15,22 @@ function purge_repo() {
     bash -x
 }
 
-REPO="ghcr.io/sfmunoz/jails-base"
+ROOTDIR="$(realpath $(dirname "$0")/..)"
 TS="$(date +%Y%m%d_%H%M%S)"
+set -e -o pipefail
 
-set -x -e -o pipefail
-
-cd "$(dirname "$0")/.."
-
-cd base/docker
-
+REPO="ghcr.io/sfmunoz/jails-base"
+set -x
+cd "${ROOTDIR}/base/docker"
 docker build -t ${REPO}:${TS} -f Dockerfile.base .
-
 docker tag ${REPO}:${TS} ${REPO}:latest
-
 { set +x; } 2>/dev/null
+purge_repo "$REPO"
 
+REPO="ghcr.io/sfmunoz/jails-claude-code-plain"
+set -x
+cd "${ROOTDIR}/tools/claude-code/docker/plain"
+docker build -t ${REPO}:${TS} -f Dockerfile .
+docker tag ${REPO}:${TS} ${REPO}:latest
+{ set +x; } 2>/dev/null
 purge_repo "$REPO"
