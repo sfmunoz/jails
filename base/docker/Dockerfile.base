@@ -6,6 +6,6 @@ WORKDIR /workspace
 
 RUN apt-get update && \
   apt-get install -y --no-install-recommends \
-    git gh jq curl ca-certificates procps sudo less && \
+    git gh jq curl ca-certificates procps sudo less iputils-ping && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
