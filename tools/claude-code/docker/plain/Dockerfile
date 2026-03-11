@@ -1,11 +1,17 @@
 FROM ghcr.io/sfmunoz/jails-base:latest
-ARG USER_ID=1002
-USER u${USER_ID}
+
+USER jails
+
 RUN curl -fsSL https://claude.ai/install.sh | bash
+
 USER root
-RUN mv /home/u${USER_ID}/.local /home/u${USER_ID}_local && \
-  chmod 700 /home/u${USER_ID}_local && \
-  ln -s /home/u${USER_ID}_local /home/u${USER_ID}/.local
-USER u${USER_ID}
-ENV PATH="/home/u${USER_ID}/.local/bin:${PATH}"
+
+RUN mv /home/jails/.local /home/jails_local && \
+  chmod 700 /home/jails_local && \
+  ln -s /home/jails_local /home/jails/.local
+
+USER jails
+
+ENV PATH="/home/jails/.local/bin:${PATH}"
+
 WORKDIR /workspace
