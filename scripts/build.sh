@@ -22,7 +22,7 @@ set -e -o pipefail
 REPO="ghcr.io/sfmunoz/jails-base"
 set -x
 cd "${ROOTDIR}/base/docker"
-docker build -t ${REPO}:${TS} -f Dockerfile.base .
+docker build --progress plain -t ${REPO}:${TS} -f Dockerfile.base .
 docker tag ${REPO}:${TS} ${REPO}:latest
 { set +x; } 2>/dev/null
 purge_repo "$REPO"
@@ -30,7 +30,7 @@ purge_repo "$REPO"
 REPO="ghcr.io/sfmunoz/jails-claude-code-plain"
 set -x
 cd "${ROOTDIR}/tools/claude-code/docker/plain"
-docker build -t ${REPO}:${TS} -f Dockerfile .
+docker build --progress plain -t ${REPO}:${TS} -f Dockerfile .
 docker tag ${REPO}:${TS} ${REPO}:latest
 { set +x; } 2>/dev/null
 purge_repo "$REPO"
