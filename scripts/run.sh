@@ -1,6 +1,5 @@
 #!/bin/bash
 IMAGE="ghcr.io/sfmunoz/jails-claude-code-plain:latest"
-set -x
 if [ -z "$HOME" ]; then
   echo "error: HOME is not defined" >&2
   exit 1
