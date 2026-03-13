@@ -1,5 +1,16 @@
 #!/bin/bash
 IMAGE="ghcr.io/sfmunoz/jails-claude-code-plain:latest"
+set -x
+if [ -z "$HOME" ]; then
+  echo "error: HOME is not defined" >&2
+  exit 1
+fi
+_rel="${PWD#$HOME/}"
+if [ "$_rel" = "$PWD" ] || [[ "$_rel" != */* ]] || [[ "$_rel" == */*/* ]]; then
+  echo "error: must run from exactly two levels under \$HOME (e.g. \$HOME/foo/bar)" >&2
+  exit 1
+fi
+unset _rel
 if [ "$JAILS_ROOT" = "1" ]; then
   set -x
   exec docker run -it --rm --name claude-code -u root:root "${IMAGE}" "$@"
