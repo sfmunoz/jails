@@ -1,13 +1,15 @@
 #!/bin/bash
-IMAGE="ghcr.io/sfmunoz/jails-claude-code-plain:latest"
-if [ -z "$HOME" ]; then
-  echo "error: HOME is not defined" >&2
+
+function error_and_exit {
+  echo "error: $1" >&2
   exit 1
-fi
+}
+
+IMAGE="ghcr.io/sfmunoz/jails-claude-code-plain:latest"
+[ -z "$HOME" ] && error_and_exit "HOME is not defined"
 _rel="${PWD#$HOME/}"
 if [ "$_rel" = "$PWD" ] || [[ "$_rel" != */* ]] || [[ "$_rel" == */*/* ]]; then
-  echo "error: must run from exactly two levels under \$HOME (e.g. \$HOME/foo/bar)" >&2
-  exit 1
+  error_and_exit "must run from exactly two levels under \$HOME (e.g. \$HOME/foo/bar)"
 fi
 unset _rel
 if [ "$JAILS_ROOT" = "1" ]; then
