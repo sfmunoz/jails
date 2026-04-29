@@ -78,4 +78,14 @@ Vagrant.configure("2") do |config|
   #   apt-get update
   #   apt-get install -y apache2
   # SHELL
+
+  config.vm.provision "shell",
+    privileged: false,
+    inline: <<-SHELL
+      curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
+      \. "$HOME/.nvm/nvm.sh"
+      nvm install 24
+      node -v
+      npm -v
+    SHELL
 end
