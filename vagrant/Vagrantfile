@@ -87,5 +87,6 @@ Vagrant.configure("2") do |config|
       nvm install 24
       node -v
       npm -v
+      npm i -g @openai/codex
     SHELL
 end
