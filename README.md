@@ -2,105 +2,34 @@
 
 Isolated environments for AI coding agents.
 
-**jails** provides ready-to-use configurations for running AI coding
-tools, such as Claude Code, OpenCode, and Codex, inside confined
-environments. The goal is to give agents the filesystem, network, and
-command access they need while limiting the blast radius on the host.
+**jails** provides a ready-to-use Vagrant development environment for
+running AI coding tools, such as Claude Code, OpenCode, and Codex, away
+from the host system. The goal is to give agents the filesystem,
+network, and command access they need while limiting the blast radius on
+the host.
 
 ## Rationale
 
 AI coding agents are useful because they can inspect projects, edit
 files, install dependencies, and run commands. Giving that level of
-access directly to a host machine is risky. This repository collects
-Docker and Vagrant configurations that make those capabilities available
+access directly to a host machine is risky. This repository collects a
+VM-based development environment that makes those capabilities available
 inside a more controlled environment.
 
 ## Structure
 
-Configurations are organized across three dimensions:
+The repository is intentionally small:
 
-- **Runtime** — how the jail is created (Docker, Vagrant, ...)
-- **Tool** — the AI coding agent running inside (Claude Code, OpenCode, ...)
-- **Stack** — the language/ecosystem available (Go, Node, Python, ...)
-
-```
-jails/
-├── base/          # hardened base images, shared across tools and stacks
-├── tools/         # per-tool configurations, layered on top of base
-├── scripts/       # build and run helpers
-└── vagrant/       # VM-based jail configuration
-```
-
-## Docker Images
-
-The Docker setup is currently organized as a small image stack:
-
-1. `base/docker/Dockerfile.base`
-   - Starts from `debian:trixie-20260223-slim`.
-   - Installs common tooling: `git`, `gh`, `jq`, `curl`, `sudo`, `less`,
-     `procps`, `iputils-ping`, and CA certificates.
-   - Creates a non-root `jails` user with UID/GID `1002`.
-
-2. `tools/claude-code/docker/plain/Dockerfile`
-   - Starts from `ghcr.io/sfmunoz/jails-base:latest`.
-   - Prepares `/home/jails_local` for persistent local tool installs.
-   - Installs Claude Code as the `jails` user.
-   - Uses `/workspace` as the working directory.
-
-## Building
-
-Build all Docker images:
-
-```bash
-./scripts/build.sh
-```
-
-The build script creates:
-
-- `ghcr.io/sfmunoz/jails-base`
-- `ghcr.io/sfmunoz/jails-claude-code-plain`
-
-Each image is tagged with a timestamp and with `latest`. Older local
-timestamp tags are removed after each build.
-
-## Running Claude Code
-
-Run Claude Code inside the Docker jail:
-
-```bash
-./scripts/run.sh [optional-command]
-```
-
-The script must be run from exactly two directory levels under `$HOME`,
-for example:
-
-```bash
-cd "$HOME/src/my-project"
-./path/to/jails/scripts/run.sh
-```
-
-In normal mode, the container mounts:
-
-- `~/.jails` as `/home/jails`
-- the current directory as `/workspace`
-
-The script also keeps `/home/jails/.local` as a symlink to
-`../jails_local`, allowing Claude Code's local installation directory to
-persist separately from the mounted home directory.
-
-For debugging, run the container as root:
-
-```bash
-JAILS_ROOT=1 ./scripts/run.sh
-```
-
-Root mode does not mount the host project or `~/.jails`.
+- `Vagrantfile` defines the VM and named provisioning steps.
+- `.ai/AGENTS.md` is the shared source for agent instructions.
+- `AGENTS.md` and `CLAUDE.md` are symlinks to `.ai/AGENTS.md`.
+- `.gitignore` excludes generated Vagrant state and logs.
 
 ## Vagrant
 
-The `vagrant/Vagrantfile` defines an Ubuntu VM using
-`bento/ubuntu-25.04` with 4 GB of memory. It syncs this repository into
-`/home/vagrant/src/jails` as the `vagrant` user and group.
+The root `Vagrantfile` defines an Ubuntu VM using `bento/ubuntu-25.04`
+with 4 GB of memory. It uses Vagrant's default project share, so this
+repository is available in the guest at `/vagrant`.
 
 Provisioning is split into named steps:
 
@@ -111,7 +40,26 @@ Provisioning is split into named steps:
 - `node` installs `nvm`, Node.js 24, and the global npm packages
   `opencode-ai` and `@openai/codex`.
 
-Generated VM logs under `vagrant/*.log` are intentionally ignored.
+Generated VM state and logs are intentionally ignored via `.vagrant/`
+and `*.log`.
+
+Start the VM:
+
+```bash
+vagrant up
+```
+
+Run a specific provisioning step:
+
+```bash
+vagrant provision --provision-with node
+```
+
+Connect to the VM:
+
+```bash
+vagrant ssh
+```
 
 ## Agent Instructions
 
@@ -122,23 +70,15 @@ instructions.
 
 ## Adding Tools or Stacks
 
-To add another tool or stack, follow the existing Claude Code Docker
-layout:
+Add tools or stacks as focused named provisioners in `Vagrantfile`.
+Keep unrelated installs split across separate provisioning steps so they
+can be rerun independently with:
 
-```text
-tools/<tool-name>/docker/<variant>/Dockerfile
+```bash
+vagrant provision --provision-with <name>
 ```
-
-Tool images should start from:
-
-```Dockerfile
-FROM ghcr.io/sfmunoz/jails-base:latest
-```
-
-Then add the new image build step to `scripts/build.sh`.
 
 ## Status
 
-Early stages of the project. The Docker path currently has the clearest
-build/run flow; the Vagrant path is available for VM-based experimentation
-with Node-based coding agents.
+Early stages of the project. The current path is Vagrant-based and
+focused on VM experimentation with Node-based coding agents.
