@@ -94,8 +94,11 @@ Vagrant.configure("2") do |config|
     type: "shell",
     privileged: false,
     inline: <<-SHELL
+      sudo mkdir -p /opt/brew_cache
+      sudo chown -R vagrant:vagrant /opt/brew_cache
       NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
       echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv bash)"' | sudo tee /etc/profile.d/brew.sh
+      echo 'export HOMEBREW_CACHE="/opt/brew_cache"' | sudo tee -a /etc/profile.d/brew.sh
       source /etc/profile.d/brew.sh
       brew install go gh
       brew install --cask claude-code
