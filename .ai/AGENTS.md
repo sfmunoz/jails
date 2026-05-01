@@ -12,7 +12,8 @@ for building and running those environments.
 - `tools/claude-code/docker/plain/Dockerfile` defines the Claude Code image.
 - `scripts/build.sh` builds and tags the local Docker images.
 - `scripts/run.sh` runs the Claude Code Docker jail.
-- `vagrant/Vagrantfile` defines the VM-based development environment.
+- `vagrant/Vagrantfile` defines the VM-based development environment and its
+  named provisioning steps.
 
 ## Working Guidelines
 
@@ -21,7 +22,12 @@ for building and running those environments.
   error handling and simple functions.
 - Treat image tags, mounted paths, users, UIDs/GIDs, and working directories as
   part of the public behavior unless the task explicitly asks to change them.
-- Avoid committing generated VM logs or local runtime state from `vagrant/`.
+- Preserve Vagrant synced-folder ownership unless intentionally changing guest
+  user semantics; `/home/vagrant/src/jails` is mounted as `vagrant:vagrant`.
+- Keep Vagrant provisioning organized by named steps (`apt`, `brew`, `claude`,
+  `node`) instead of folding unrelated installs into one shell block.
+- Avoid committing generated VM logs or local runtime state from `vagrant/`;
+  `vagrant/*.log` is ignored intentionally.
 - Do not rewrite unrelated Docker or Vagrant configuration while adding a tool
   or stack.
 
@@ -53,3 +59,7 @@ JAILS_ROOT=1 ./scripts/run.sh
   and root mode with `JAILS_ROOT=1`.
 - For Vagrant changes, validate with Vagrant only when the local environment has
   the required provider available.
+- When changing Vagrant provisioning, keep the expected toolchain in mind:
+  `apt` installs Ruby, Bubblewrap, and kitty terminfo; Homebrew installs Go and
+  GitHub CLI; Claude Code is installed from Anthropic's install script; nvm
+  installs Node.js 24 plus global `opencode-ai` and `@openai/codex`.
