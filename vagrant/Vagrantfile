@@ -89,27 +89,14 @@ Vagrant.configure("2") do |config|
       echo '======== begin ========'
     SHELL
 
-  config.vm.provision "apt",
-    type: "shell",
-    privileged: true,
-    inline: <<-SHELL
-      apt update
-      apt install -y gh bubblewrap
-    SHELL
-
   config.vm.provision "brew",
     type: "shell",
     privileged: false,
     inline: <<-SHELL
       NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
       echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv bash)"' | sudo tee /etc/profile.d/brew.sh
-    SHELL
-
-  config.vm.provision "go",
-    type: "shell",
-    privileged: false,
-    inline: <<-SHELL
-      brew install go
+      source /etc/profile.d/brew.sh
+      brew install go gh bubblewrap
     SHELL
 
   config.vm.provision "claude",
