@@ -97,6 +97,19 @@ Vagrant.configure("2") do |config|
       apt install -y gh bubblewrap
     SHELL
 
+  config.vm.provision "brew",
+    type: "shell",
+    privileged: false,
+    inline: <<-SHELL
+      NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      BASHRC="${HOME}/.bashrc"
+      if ! grep -q linuxbrew "${BASHRC}"
+      then
+        echo >> "${BASHRC}"
+        echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv bash)"' >> "${BASHRC}"
+      fi
+    SHELL
+
   config.vm.provision "go",
     type: "shell",
     privileged: true,
