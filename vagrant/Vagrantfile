@@ -102,12 +102,7 @@ Vagrant.configure("2") do |config|
     privileged: false,
     inline: <<-SHELL
       NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-      BASHRC="${HOME}/.bashrc"
-      if ! grep -q linuxbrew "${BASHRC}"
-      then
-        echo >> "${BASHRC}"
-        echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv bash)"' >> "${BASHRC}"
-      fi
+      echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv bash)"' | sudo tee /etc/profile.d/brew.sh
     SHELL
 
   config.vm.provision "go",
