@@ -105,13 +105,14 @@ Vagrant.configure("2") do |config|
     type: "shell",
     privileged: false,
     inline: <<-SHELL
-      sudo mkdir -p /opt/nvm
-      sudo chown -R vagrant:vagrant /opt/nvm
+      sudo mkdir -p /opt/nvm /opt/npm_cache
+      sudo chown -R vagrant:vagrant /opt/nvm /opt/npm_cache
       curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | NVM_DIR=/opt/nvm bash
       \. /opt/nvm/nvm.sh
       nvm install 24
       node -v
       npm -v
+      npm config -g set cache /opt/npm_cache
       npm i -g opencode-ai @openai/codex
       npm ls -g
     SHELL
