@@ -98,13 +98,7 @@ Vagrant.configure("2") do |config|
       echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv bash)"' | sudo tee /etc/profile.d/brew.sh
       source /etc/profile.d/brew.sh
       brew install go gh
-    SHELL
-
-  config.vm.provision "claude",
-    type: "shell",
-    privileged: false,
-    inline: <<-SHELL
-      curl -fsSL https://claude.ai/install.sh | bash
+      brew install --cask claude-code
     SHELL
 
   config.vm.provision "node",
