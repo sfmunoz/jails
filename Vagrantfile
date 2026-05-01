@@ -105,8 +105,10 @@ Vagrant.configure("2") do |config|
     type: "shell",
     privileged: false,
     inline: <<-SHELL
-      curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
-      \. "$HOME/.nvm/nvm.sh"
+      sudo mkdir -p /opt/nvm
+      sudo chown -R vagrant:vagrant /opt/nvm
+      curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | NVM_DIR=/opt/nvm bash
+      \. /opt/nvm/nvm.sh
       nvm install 24
       node -v
       npm -v
