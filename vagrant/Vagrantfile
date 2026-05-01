@@ -87,7 +87,7 @@ Vagrant.configure("2") do |config|
     privileged: true,
     inline: <<-SHELL
       apt update
-      apt install -y ruby bubblewrap
+      apt install -y ruby bubblewrap kitty-terminfo
     SHELL
 
   config.vm.provision "brew",
