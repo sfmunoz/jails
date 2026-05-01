@@ -100,13 +100,25 @@ Root mode does not mount the host project or `~/.jails`.
 
 The `vagrant/Vagrantfile` defines an Ubuntu VM using
 `bento/ubuntu-25.04` with 4 GB of memory. It syncs this repository into
-`/home/vagrant/src/jails` and provisions the VM with:
+`/home/vagrant/src/jails` as the `vagrant` user and group.
 
-- GitHub CLI (`gh`)
-- `nvm`
-- Node.js 24
-- `opencode-ai`
-- `@openai/codex`
+Provisioning is split into named steps:
+
+- `apt` installs Ruby, Bubblewrap, and kitty terminfo.
+- `brew` installs Homebrew, configures `/etc/profile.d/brew.sh`, and
+  installs Go and GitHub CLI (`gh`).
+- `claude` installs Claude Code from Anthropic's install script.
+- `node` installs `nvm`, Node.js 24, and the global npm packages
+  `opencode-ai` and `@openai/codex`.
+
+Generated VM logs under `vagrant/*.log` are intentionally ignored.
+
+## Agent Instructions
+
+Shared agent guidance lives in `.ai/AGENTS.md`. The repository root
+contains `AGENTS.md` and `CLAUDE.md` symlinks that both point to that
+file, so Codex-style and Claude-style agents read the same project
+instructions.
 
 ## Adding Tools or Stacks
 
