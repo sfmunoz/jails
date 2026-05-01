@@ -97,6 +97,23 @@ Vagrant.configure("2") do |config|
       apt install -y gh bubblewrap
     SHELL
 
+  config.vm.provision "go",
+    type: "shell",
+    privileged: true,
+    inline: <<-SHELL
+      set -e
+      go_version="$(curl -fsSL "https://go.dev/VERSION?m=text" | sed -n '1p')"
+      go_arch="$(dpkg --print-architecture)"
+      go_tarball="${go_version}.linux-${go_arch}.tar.gz"
+      go_url="https://go.dev/dl/${go_tarball}"
+      curl -fsSLo "/tmp/${go_tarball}" "${go_url}"
+      rm -rf /usr/local/go
+      tar -C /usr/local -xzf "/tmp/${go_tarball}"
+      rm -f "/tmp/${go_tarball}"
+      printf '%s\n' 'export PATH="/usr/local/go/bin:${PATH}"' >/etc/profile.d/go.sh
+      /usr/local/go/bin/go version
+    SHELL
+
   config.vm.provision "claude",
     type: "shell",
     privileged: false,
