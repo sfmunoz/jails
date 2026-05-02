@@ -96,6 +96,14 @@ Vagrant.configure("2") do |config|
   #   apt-get install -y apache2
   # SHELL
 
+  config.vm.provision "skel",
+    type: "shell",
+    privileged: false,
+    inline: <<-SHELL
+      set -e -x -o pipefail
+      rsync -rv /etc/skel/ /home/vagrant/
+    SHELL
+
   config.vm.provision "cache",
     type: "shell",
     privileged: true,
