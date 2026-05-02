@@ -57,7 +57,7 @@ Vagrant.configure("2") do |config|
   File.write(authorized_keys, File.read(public_key).strip + "\n")
   File.chmod(0700, ssh_dir)
   File.chmod(0600, authorized_keys)
-  config.ssh.keys_only = false
+  config.ssh.keys_only = false  # use ssh-agent stored keys in addition to vagrant-provided keys
   config.vm.synced_folder jails_dir, "/home/vagrant",
     owner: "vagrant",
     group: "vagrant"
