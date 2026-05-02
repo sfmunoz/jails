@@ -47,12 +47,12 @@ Vagrant.configure("2") do |config|
   # argument is a set of non-required options.
   # config.vm.synced_folder "../data", "/vagrant_data"
 
-  jails_dir = File.expand_path("~/.jails")
   public_key = File.expand_path("~/.ssh/id_rsa.pub")
+  raise "Missing public key: #{public_key}" unless File.exist?(public_key)
+  jails_dir = File.expand_path("~/.jails")
   ssh_dir = File.join(jails_dir, ".ssh")
   authorized_keys = File.join(ssh_dir, "authorized_keys")
-  raise "Missing folder: #{jails_dir}" unless Dir.exist?(jails_dir)
-  raise "Missing public key: #{public_key}" unless File.exist?(public_key)
+  FileUtils.mkdir_p(jails_dir)
   FileUtils.mkdir_p(ssh_dir)
   File.write(authorized_keys, File.read(public_key).strip + "\n")
   File.chmod(0700, ssh_dir)
