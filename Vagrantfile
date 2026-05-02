@@ -98,6 +98,22 @@ Vagrant.configure("2") do |config|
       rm -rf /home/vagrant/.ssh
     SHELL
 
+  config.vm.provision "cache",
+    type: "shell",
+    privileged: true,
+    inline: <<-SHELL
+      set -e -x -o pipefail
+      mkdir -p /cache /cache/nvm /cache/npm /cache/brew
+      chown -R vagrant:vagrant /cache
+      chmod 700 /cache
+      mkdir -p /home/vagrant/.cache
+      chown vagrant:vagrant /home/vagrant/.cache
+      rm -rf /home/vagrant/.nvm /home/vagrant/.npm /home/vagrant/.cache/Homebrew
+      sudo -u vagrant ln -s /cache/nvm /home/vagrant/.nvm
+      sudo -u vagrant ln -s /cache/npm /home/vagrant/.npm
+      sudo -u vagrant ln -s /cache/brew /home/vagrant/.cache/Homebrew
+    SHELL
+
   config.vm.provision "apt",
     type: "shell",
     privileged: true,
@@ -110,11 +126,8 @@ Vagrant.configure("2") do |config|
     type: "shell",
     privileged: false,
     inline: <<-SHELL
-      sudo mkdir -p /opt/brew_cache
-      sudo chown -R vagrant:vagrant /opt/brew_cache
       NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
       echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv bash)"' | sudo tee /etc/profile.d/brew.sh
-      echo 'export HOMEBREW_CACHE="/opt/brew_cache"' | sudo tee -a /etc/profile.d/brew.sh
       source /etc/profile.d/brew.sh
       brew install go gh
       brew install --cask claude-code
@@ -124,14 +137,11 @@ Vagrant.configure("2") do |config|
     type: "shell",
     privileged: false,
     inline: <<-SHELL
-      sudo mkdir -p /opt/nvm /opt/npm_cache
-      sudo chown -R vagrant:vagrant /opt/nvm /opt/npm_cache
-      curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | NVM_DIR=/opt/nvm bash
-      \. /opt/nvm/nvm.sh
+      curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
+      \. "$HOME/.nvm/nvm.sh"
       nvm install 24
       node -v
       npm -v
-      npm config -g set cache /opt/npm_cache
       npm i -g opencode-ai @openai/codex
       npm ls -g
     SHELL
