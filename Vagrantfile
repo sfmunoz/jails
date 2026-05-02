@@ -1,6 +1,8 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+require "fileutils"
+
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
 # backwards compatibility). Please don't change it unless you know what
@@ -44,7 +46,19 @@ Vagrant.configure("2") do |config|
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
   # config.vm.synced_folder "../data", "/vagrant_data"
-  config.vm.synced_folder "~/.jails", "/home/vagrant",
+
+  jails_dir = File.expand_path("~/.jails")
+  public_key = File.expand_path("~/.ssh/id_rsa.pub")
+  ssh_dir = File.join(jails_dir, ".ssh")
+  authorized_keys = File.join(ssh_dir, "authorized_keys")
+  raise "Missing folder: #{jails_dir}" unless Dir.exist?(jails_dir)
+  raise "Missing public key: #{public_key}" unless File.exist?(public_key)
+  FileUtils.mkdir_p(ssh_dir)
+  File.write(authorized_keys, File.read(public_key).strip + "\n")
+  File.chmod(0700, ssh_dir)
+  File.chmod(0600, authorized_keys)
+  config.ssh.keys_only = false
+  config.vm.synced_folder jails_dir, "/home/vagrant",
     owner: "vagrant",
     group: "vagrant"
 
