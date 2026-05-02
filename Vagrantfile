@@ -82,6 +82,22 @@ Vagrant.configure("2") do |config|
   #   apt-get install -y apache2
   # SHELL
 
+  config.vm.provision "ssh",
+    type: "shell",
+    privileged: true,
+    inline: <<-SHELL
+      CONF_FILE="/etc/ssh/sshd_config.d/40-etc-ssh-authorized-keys.conf"
+      set -e -x -o pipefail
+      echo 'AuthorizedKeysFile .ssh/authorized_keys .ssh/authorized_keys2 /etc/ssh/authorized_keys/%u' > "$CONF_FILE"
+      chmod 600 "$CONF_FILE"
+      systemctl restart sshd
+      mkdir -p /etc/ssh/authorized_keys
+      mv /home/vagrant/.ssh/authorized_keys /etc/ssh/authorized_keys/vagrant
+      chown root:root /etc/ssh/authorized_keys/vagrant
+      chmod 644 /etc/ssh/authorized_keys/vagrant
+      rm -rf /home/vagrant/.ssh
+    SHELL
+
   config.vm.provision "apt",
     type: "shell",
     privileged: true,
