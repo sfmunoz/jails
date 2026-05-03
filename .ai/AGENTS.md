@@ -30,6 +30,10 @@ steps.
   it: the host `~/.jails` directory is mounted on `/home/vagrant`, the host
   `~/.ssh/id_rsa.pub` is copied into `~/.jails/.ssh/authorized_keys`, and
   `config.ssh.keys_only = false` is set so agent-managed keys still work.
+- Preserve the current optional extra-mount behavior unless the task explicitly
+  changes it: additional synced folders are configured through sequential
+  `JAILS_MOUNT_n` environment variables using `/absolute/host:/absolute/guest`
+  values, and the host source must already exist as a directory.
 - Avoid committing generated logs or local runtime state; `.vagrant/` and
   `*.log` are ignored intentionally.
 - Do not rewrite unrelated Vagrant configuration while adding a tool or stack.
@@ -65,3 +69,7 @@ vagrant ssh
   symlinked tool caches; `apt` installs Ruby, Bubblewrap, and kitty terminfo;
   Homebrew installs Go, GitHub CLI, and the `claude-code` cask; nvm installs
   Node.js 24 plus global `opencode-ai` and `@openai/codex`.
+- When changing guest mounts, keep the current assumptions in mind: Vagrant's
+  default project share remains enabled, `/home/vagrant` comes from `~/.jails`,
+  and optional extra mounts are discovered in order from `JAILS_MOUNT_1`
+  upward.

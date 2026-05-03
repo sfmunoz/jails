@@ -37,6 +37,12 @@ exist, copies the host's `~/.ssh/id_rsa.pub` into
 `~/.jails/.ssh/authorized_keys`, and allows SSH agent-backed keys by
 setting `config.ssh.keys_only = false`.
 
+Additional host directories can be mounted into the guest by setting
+indexed environment variables before `vagrant up` or `vagrant reload`,
+for example `JAILS_MOUNT_1=/absolute/host/path:/absolute/guest/path`.
+Indexes are read sequentially starting at `1`, both paths must be
+absolute, and the host source must already exist as a directory.
+
 Provisioning is split into named steps:
 
 - `skel` syncs `/etc/skel/` into `/home/vagrant/`.
@@ -85,6 +91,9 @@ helper methods so they can be rerun independently with:
 ```bash
 vagrant provision --provision-with <name>
 ```
+
+When adding guest mounts, preserve the indexed `JAILS_MOUNT_n` pattern
+instead of introducing one-off synced-folder wiring.
 
 ## Status
 
