@@ -94,8 +94,3 @@ vagrant provision --provision-with <name>
 
 When adding guest mounts, preserve the indexed `JAILS_MOUNT_n` pattern
 instead of introducing one-off synced-folder wiring.
-
-## Status
-
-Early stages of the project. The current path is Vagrant-based and
-focused on VM experimentation with Node-based coding agents.
