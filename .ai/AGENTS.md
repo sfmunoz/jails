@@ -23,8 +23,13 @@ steps.
 - The repository uses Vagrant's default project share. Do not reintroduce a
   custom `/home/vagrant/src/jails` synced folder unless intentionally changing
   guest filesystem semantics.
-- Keep Vagrant provisioning organized by named steps (`apt`, `brew`, `claude`,
-  `node`) instead of folding unrelated installs into one shell block.
+- Keep Vagrant provisioning organized by named steps (`skel`, `cache`, `apt`,
+  `brew`, `node`) and helper methods instead of folding unrelated installs into
+  one shell block.
+- Preserve the current home-jail behavior unless the task explicitly changes
+  it: the host `~/.jails` directory is mounted on `/home/vagrant`, the host
+  `~/.ssh/id_rsa.pub` is copied into `~/.jails/.ssh/authorized_keys`, and
+  `config.ssh.keys_only = false` is set so agent-managed keys still work.
 - Avoid committing generated logs or local runtime state; `.vagrant/` and
   `*.log` are ignored intentionally.
 - Do not rewrite unrelated Vagrant configuration while adding a tool or stack.
@@ -56,6 +61,7 @@ vagrant ssh
 - For provisioning changes, prefer running the affected named provisioner with
   `vagrant provision --provision-with <name>` when practical.
 - When changing Vagrant provisioning, keep the expected toolchain in mind:
-  `apt` installs Ruby, Bubblewrap, and kitty terminfo; Homebrew installs Go and
-  GitHub CLI; Claude Code is installed from Anthropic's install script; nvm
-  installs Node.js 24 plus global `opencode-ai` and `@openai/codex`.
+  `skel` syncs `/etc/skel` into `/home/vagrant`; `cache` prepares `/cache` and
+  symlinked tool caches; `apt` installs Ruby, Bubblewrap, and kitty terminfo;
+  Homebrew installs Go, GitHub CLI, and the `claude-code` cask; nvm installs
+  Node.js 24 plus global `opencode-ai` and `@openai/codex`.

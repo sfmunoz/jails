@@ -31,12 +31,20 @@ The root `Vagrantfile` defines an Ubuntu VM using `bento/ubuntu-25.04`
 with 4 GB of memory. It uses Vagrant's default project share, so this
 repository is available in the guest at `/vagrant`.
 
+On startup, the VM mounts the host's `~/.jails` directory onto
+`/home/vagrant`. The setup ensures `~/.jails` and its `.ssh` directory
+exist, copies the host's `~/.ssh/id_rsa.pub` into
+`~/.jails/.ssh/authorized_keys`, and allows SSH agent-backed keys by
+setting `config.ssh.keys_only = false`.
+
 Provisioning is split into named steps:
 
+- `skel` syncs `/etc/skel/` into `/home/vagrant/`.
+- `cache` prepares `/cache` and symlinks the vagrant user's `nvm`, npm,
+  and Homebrew cache directories into it.
 - `apt` installs Ruby, Bubblewrap, and kitty terminfo.
 - `brew` installs Homebrew, configures `/etc/profile.d/brew.sh`, and
-  installs Go and GitHub CLI (`gh`).
-- `claude` installs Claude Code from Anthropic's install script.
+  installs Go, GitHub CLI (`gh`), and the `claude-code` cask.
 - `node` installs `nvm`, Node.js 24, and the global npm packages
   `opencode-ai` and `@openai/codex`.
 
@@ -71,8 +79,8 @@ instructions.
 ## Adding Tools or Stacks
 
 Add tools or stacks as focused named provisioners in `Vagrantfile`.
-Keep unrelated installs split across separate provisioning steps so they
-can be rerun independently with:
+Keep unrelated installs split across separate provisioning steps or
+helper methods so they can be rerun independently with:
 
 ```bash
 vagrant provision --provision-with <name>
