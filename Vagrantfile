@@ -20,18 +20,7 @@ def configure_home_jail(config)
     group: "vagrant"
 end
 
-Vagrant.configure("2") do |config|
-  config.vm.box = "bento/ubuntu-25.04"
-  config.vm.box_check_update = false
-
-  # config.vm.synced_folder ".", "/vagrant", disabled: true
-
-  configure_home_jail(config)
-
-  config.vm.provider "virtualbox" do |vb|
-    vb.memory = "4096"
-  end
-
+def configure_skel_provision(config)
   config.vm.provision "skel",
     type: "shell",
     privileged: false,
@@ -39,7 +28,9 @@ Vagrant.configure("2") do |config|
       set -e -x -o pipefail
       rsync -rv /etc/skel/ /home/vagrant/
     SHELL
+end
 
+def configure_cache_provision(config)
   config.vm.provision "cache",
     type: "shell",
     privileged: true,
@@ -55,7 +46,9 @@ Vagrant.configure("2") do |config|
       sudo -u vagrant ln -s /cache/npm /home/vagrant/.npm
       sudo -u vagrant ln -s /cache/brew /home/vagrant/.cache/Homebrew
     SHELL
+end
 
+def configure_apt_provision(config)
   config.vm.provision "apt",
     type: "shell",
     privileged: true,
@@ -63,7 +56,9 @@ Vagrant.configure("2") do |config|
       apt update
       apt install -y ruby bubblewrap kitty-terminfo
     SHELL
+end
 
+def configure_brew_provision(config)
   config.vm.provision "brew",
     type: "shell",
     privileged: false,
@@ -74,7 +69,9 @@ Vagrant.configure("2") do |config|
       brew install go gh
       brew install --cask claude-code
     SHELL
+end
 
+def configure_node_provision(config)
   config.vm.provision "node",
     type: "shell",
     privileged: false,
@@ -87,4 +84,23 @@ Vagrant.configure("2") do |config|
       npm i -g opencode-ai @openai/codex
       npm ls -g
     SHELL
+end
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "bento/ubuntu-25.04"
+  config.vm.box_check_update = false
+
+  # config.vm.synced_folder ".", "/vagrant", disabled: true
+
+  configure_home_jail(config)
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "4096"
+  end
+
+  configure_skel_provision(config)
+  configure_cache_provision(config)
+  configure_apt_provision(config)
+  configure_brew_provision(config)
+  configure_node_provision(config)
 end
