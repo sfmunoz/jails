@@ -20,6 +20,35 @@ def configure_home_jail(config)
     group: "vagrant"
 end
 
+def configure_jails_mount(config, mount_name)
+  mount_value = ENV[mount_name]
+  return false if mount_value.nil?
+
+  parts = mount_value.split(":", 3)
+  return false unless parts.length == 2
+
+  host_path, guest_path = parts
+  return false unless host_path.start_with?("/") && guest_path.start_with?("/")
+
+  expanded_host_path = File.expand_path(host_path)
+  raise "JAILS mount source is not a directory for #{mount_name}: #{expanded_host_path}" unless Dir.exist?(expanded_host_path)
+
+  config.vm.synced_folder expanded_host_path, guest_path,
+    owner: "vagrant",
+    group: "vagrant"
+  true
+end
+
+def configure_jails_mounts(config)
+  index = 1
+
+  loop do
+    mount_name = "JAILS_MOUNT_#{index}"
+    break unless configure_jails_mount(config, mount_name)
+    index += 1
+  end
+end
+
 def configure_skel_provision(config)
   config.vm.provision "skel",
     type: "shell",
@@ -93,6 +122,7 @@ Vagrant.configure("2") do |config|
   # config.vm.synced_folder ".", "/vagrant", disabled: true
 
   configure_home_jail(config)
+  configure_jails_mounts(config)
 
   config.vm.provider "virtualbox" do |vb|
     vb.memory = "4096"
