@@ -3,12 +3,7 @@
 
 require "fileutils"
 
-Vagrant.configure("2") do |config|
-  config.vm.box = "bento/ubuntu-25.04"
-  config.vm.box_check_update = false
-
-  # config.vm.synced_folder ".", "/vagrant", disabled: true
-
+def configure_home_jail(config)
   public_key = File.expand_path("~/.ssh/id_rsa.pub")
   raise "Missing public key: #{public_key}" unless File.exist?(public_key)
   jails_dir = File.expand_path("~/.jails")
@@ -23,6 +18,15 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder jails_dir, "/home/vagrant",
     owner: "vagrant",
     group: "vagrant"
+end
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "bento/ubuntu-25.04"
+  config.vm.box_check_update = false
+
+  # config.vm.synced_folder ".", "/vagrant", disabled: true
+
+  configure_home_jail(config)
 
   config.vm.provider "virtualbox" do |vb|
     vb.memory = "4096"
