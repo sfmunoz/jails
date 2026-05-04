@@ -23,13 +23,14 @@ steps.
 - The repository uses Vagrant's default project share. Do not reintroduce a
   custom `/home/vagrant/src/jails` synced folder unless intentionally changing
   guest filesystem semantics.
-- Keep Vagrant provisioning organized by named steps (`skel`, `cache`, `apt`,
-  `brew`, `node`) and helper methods instead of folding unrelated installs into
-  one shell block.
+- Keep Vagrant provisioning organized by named steps (`apt`, `brew`, `node`)
+  and helper methods instead of folding unrelated installs into one shell
+  block.
 - Preserve the current home-jail behavior unless the task explicitly changes
-  it: the host `~/.jails` directory is mounted on `/home/vagrant`, the host
-  `~/.ssh/id_rsa.pub` is copied into `~/.jails/.ssh/authorized_keys`, and
-  `config.ssh.keys_only = false` is set so agent-managed keys still work.
+  it: the host `~/.jails` directory is prepared with `0700` permissions, and
+  only selected jail-owned home directories are mounted into `/home/vagrant`
+  (`~/.jails/.config` to `/home/vagrant/.config` and `~/.jails/.codex` to
+  `/home/vagrant/.codex`).
 - Preserve the current optional extra-mount behavior unless the task explicitly
   changes it: additional synced folders are configured through sequential
   `JAILS_MOUNT_n` environment variables using `/absolute/host:/absolute/guest`
@@ -65,11 +66,10 @@ vagrant ssh
 - For provisioning changes, prefer running the affected named provisioner with
   `vagrant provision --provision-with <name>` when practical.
 - When changing Vagrant provisioning, keep the expected toolchain in mind:
-  `skel` syncs `/etc/skel` into `/home/vagrant`; `cache` prepares `/cache` and
-  symlinked tool caches; `apt` installs Ruby, Bubblewrap, and kitty terminfo;
-  Homebrew installs Go, GitHub CLI, and the `claude-code` cask; nvm installs
-  Node.js 24 plus global `opencode-ai` and `@openai/codex`.
+  `apt` installs Ruby, Bubblewrap, and kitty terminfo; Homebrew installs Go,
+  GitHub CLI, and the `claude-code` cask; nvm installs Node.js 24 plus global
+  `opencode-ai` and `@openai/codex`.
 - When changing guest mounts, keep the current assumptions in mind: Vagrant's
-  default project share remains enabled, `/home/vagrant` comes from `~/.jails`,
-  and optional extra mounts are discovered in order from `JAILS_MOUNT_1`
-  upward.
+  default project share remains enabled, selected home directories come from
+  `~/.jails`, and optional extra mounts are discovered in order from
+  `JAILS_MOUNT_1` upward.

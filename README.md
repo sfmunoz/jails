@@ -31,11 +31,15 @@ The root `Vagrantfile` defines an Ubuntu VM using `bento/ubuntu-25.04`
 with 4 GB of memory. It uses Vagrant's default project share, so this
 repository is available in the guest at `/vagrant`.
 
-On startup, the VM mounts the host's `~/.jails` directory onto
-`/home/vagrant`. The setup ensures `~/.jails` and its `.ssh` directory
-exist, copies the host's `~/.ssh/id_rsa.pub` into
-`~/.jails/.ssh/authorized_keys`, and allows SSH agent-backed keys by
-setting `config.ssh.keys_only = false`.
+On startup, the VM prepares the host's `~/.jails` directory with `0700`
+permissions. It mounts selected jail-owned home directories into the
+guest instead of replacing the entire `/home/vagrant` tree:
+
+- `~/.jails/.config` mounts at `/home/vagrant/.config`.
+- `~/.jails/.codex` mounts at `/home/vagrant/.codex`.
+
+Those mounted directories are created on the host when needed and use
+restrictive mount options for directory and file modes.
 
 Additional host directories can be mounted into the guest by setting
 indexed environment variables before `vagrant up` or `vagrant reload`,
@@ -45,9 +49,6 @@ absolute, and the host source must already exist as a directory.
 
 Provisioning is split into named steps:
 
-- `skel` syncs `/etc/skel/` into `/home/vagrant/`.
-- `cache` prepares `/cache` and symlinks the vagrant user's `nvm`, npm,
-  and Homebrew cache directories into it.
 - `apt` installs Ruby, Bubblewrap, and kitty terminfo.
 - `brew` installs Homebrew, configures `/etc/profile.d/brew.sh`, and
   installs Go, GitHub CLI (`gh`), and the `claude-code` cask.
