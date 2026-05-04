@@ -4,35 +4,35 @@
 require "fileutils"
 
 def configure_home_jail(config)
-  public_key = File.expand_path("~/.ssh/id_rsa.pub")
-  raise "Missing public key: #{public_key}" unless File.exist?(public_key)
   jails_dir = File.expand_path("~/.jails")
-  ssh_dir = File.join(jails_dir, ".ssh")
-  authorized_keys = File.join(ssh_dir, "authorized_keys")
   FileUtils.mkdir_p(jails_dir)
-  FileUtils.mkdir_p(ssh_dir)
-  File.write(authorized_keys, File.read(public_key).strip + "\n")
-  File.chmod(0700, ssh_dir)
-  File.chmod(0600, authorized_keys)
-  config.ssh.keys_only = false  # use ssh-agent stored keys in addition to vagrant-provided keys
-  config.vm.synced_folder jails_dir, "/home/vagrant",
-    owner: "vagrant",
-    group: "vagrant"
+  File.chmod(0700, jails_dir)
+  folders = [
+    ".config",
+    ".codex",
+  ]
+  folders.each_with_index do |f, i|
+    host_path = File.join(jails_dir,f)
+    guest_path = "/home/vagrant/#{f}"
+    FileUtils.mkdir_p(host_path)
+    File.chmod(0700, host_path)
+    FileUtils.mkdir_p(host_path)
+    config.vm.synced_folder host_path, guest_path,
+      owner: "vagrant",
+      group: "vagrant",
+      mount_options: ["dmode=700", "fmode=600"]
+  end
 end
 
 def configure_jails_mount(config, mount_name)
   mount_value = ENV[mount_name]
   return false if mount_value.nil?
-
   parts = mount_value.split(":", 3)
   return false unless parts.length == 2
-
   host_path, guest_path = parts
   return false unless host_path.start_with?("/") && guest_path.start_with?("/")
-
   expanded_host_path = File.expand_path(host_path)
   raise "JAILS mount source is not a directory for #{mount_name}: #{expanded_host_path}" unless Dir.exist?(expanded_host_path)
-
   config.vm.synced_folder expanded_host_path, guest_path,
     owner: "vagrant",
     group: "vagrant"
@@ -41,40 +41,11 @@ end
 
 def configure_jails_mounts(config)
   index = 1
-
   loop do
     mount_name = "JAILS_MOUNT_#{index}"
     break unless configure_jails_mount(config, mount_name)
     index += 1
   end
-end
-
-def configure_skel_provision(config)
-  config.vm.provision "skel",
-    type: "shell",
-    privileged: false,
-    inline: <<-SHELL
-      set -e -x -o pipefail
-      rsync -rv /etc/skel/ /home/vagrant/
-    SHELL
-end
-
-def configure_cache_provision(config)
-  config.vm.provision "cache",
-    type: "shell",
-    privileged: true,
-    inline: <<-SHELL
-      set -e -x -o pipefail
-      mkdir -p /cache /cache/nvm /cache/npm /cache/brew
-      chown -R vagrant:vagrant /cache
-      chmod 700 /cache
-      mkdir -p /home/vagrant/.cache
-      chown vagrant:vagrant /home/vagrant/.cache
-      rm -rf /home/vagrant/.nvm /home/vagrant/.npm /home/vagrant/.cache/Homebrew
-      sudo -u vagrant ln -s /cache/nvm /home/vagrant/.nvm
-      sudo -u vagrant ln -s /cache/npm /home/vagrant/.npm
-      sudo -u vagrant ln -s /cache/brew /home/vagrant/.cache/Homebrew
-    SHELL
 end
 
 def configure_apt_provision(config)
@@ -128,8 +99,6 @@ Vagrant.configure("2") do |config|
     vb.memory = "4096"
   end
 
-  configure_skel_provision(config)
-  configure_cache_provision(config)
   configure_apt_provision(config)
   configure_brew_provision(config)
   configure_node_provision(config)
