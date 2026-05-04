@@ -89,16 +89,12 @@ end
 Vagrant.configure("2") do |config|
   config.vm.box = "bento/ubuntu-25.04"
   config.vm.box_check_update = false
-
   # config.vm.synced_folder ".", "/vagrant", disabled: true
-
   configure_home_jail(config)
   configure_jails_mounts(config)
-
   config.vm.provider "virtualbox" do |vb|
     vb.memory = "4096"
   end
-
   configure_apt_provision(config)
   configure_brew_provision(config)
   configure_node_provision(config)
